@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -84,9 +85,18 @@ class Projet
     #[Groups(['read:collection', 'write'])]
     private Collection $tag;
 
+    /**
+     * @var Collection<int, Image>
+     */
+    #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'projet')]
+    #[Groups(['read:collection', 'write'])]
+    private Collection $image;
+
+
     public function __construct()
     {
         $this->tag = new ArrayCollection();
+        $this->image = new ArrayCollection();
     }
 
 
@@ -199,6 +209,36 @@ class Projet
     public function removeTag(Tag $tag): static
     {
         $this->tag->removeElement($tag);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Image>
+     */
+    public function getImage(): Collection
+    {
+        return $this->image;
+    }
+
+    public function addImage(Image $image): static
+    {
+        if (!$this->image->contains($image)) {
+            $this->image->add($image);
+            $image->setProjet($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(Image $image): static
+    {
+        if ($this->image->removeElement($image)) {
+            // set the owning side to null (unless already changed)
+            if ($image->getProjet() === $this) {
+                $image->setProjet(null);
+            }
+        }
 
         return $this;
     }
